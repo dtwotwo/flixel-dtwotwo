@@ -120,7 +120,6 @@ class FlxDrawQuadsItem extends FlxDrawBaseItem<FlxDrawQuadsItem>
 	private static var randColors:Array<openfl.display.BitmapData> = [];
 	#end
 
-	#if !flash
 	override public function render(camera:FlxCamera):Void
 	{
 		if (rects.length == 0)
@@ -188,5 +187,4 @@ class FlxDrawQuadsItem extends FlxDrawBaseItem<FlxDrawQuadsItem>
 			parameter.value = [];
 		parameter.value[0] = value;
 	}
-	#end
 }

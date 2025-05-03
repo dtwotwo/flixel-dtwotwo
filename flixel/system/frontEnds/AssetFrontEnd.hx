@@ -60,9 +60,13 @@ class AssetFrontEnd
 	{
 		final rawPath = '${haxe.macro.Compiler.getDefine("FLX_CUSTOM_ASSETS_DIRECTORY")}';
 		directory = '${haxe.macro.Compiler.getDefine("FLX_CUSTOM_ASSETS_DIRECTORY_ABS")}';
+		
+		#if FLX_VALIDATE_CUSTOM_ASSETS_DIRECTORY
 		// Verify valid directory
 		if (sys.FileSystem.exists(directory) == false)
 			throw 'Error finding custom asset directory:"$directory" from given path: $rawPath';
+		#end
+
 		// remove final "/assets" since the id typically contains it
 		final split = directory.split("/");
 		split.pop();
@@ -86,7 +90,7 @@ class AssetFrontEnd
 	#end
 	
 	#if (FLX_DEFAULT_SOUND_EXT == "1" || FLX_NO_DEFAULT_SOUND_EXT)
-	public final defaultSoundExtension:String = #if flash ".mp3" #else ".ogg" #end;
+	public final defaultSoundExtension:String = ".ogg";
 	#else
 	public final defaultSoundExtension:String = '.${haxe.macro.Compiler.getDefine("FLX_DEFAULT_SOUND_EXT")}';
 	#end

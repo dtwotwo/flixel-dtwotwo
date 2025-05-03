@@ -6,6 +6,7 @@ import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import flixel.system.FlxAssets.FlxSoundAsset;
 import flixel.tweens.FlxTween;
+import flixel.util.FlxSignal;
 import flixel.util.FlxStringUtil;
 import openfl.events.Event;
 import openfl.events.IEventDispatcher;
@@ -66,13 +67,15 @@ class FlxSound extends FlxBasic
 	 * Whether to call `destroy()` when the sound has finished playing.
 	 */
 	public var autoDestroy:Bool;
-	
+
 	/**
-	 * Tracker for sound complete callback. If assigned, will be called
-	 * each time when sound reaches its end.
+	 * Signal that is dispatched on sound complete.
 	 */
-	public var onComplete:Void->Void;
+	public final onFinish:FlxSignal;
 	
+	@:deprecated("`FlxSound.onComplete` is deprecated! Use `FlxSound.onFinish` instead.")
+	public var onComplete:Void->Void;
+
 	/**
 	 * Pan amount. -1 = full left, 1 = full right. Proximity based panning overrides this.
 	 * 
@@ -90,6 +93,11 @@ class FlxSound extends FlxBasic
 	 * Set volume to a value between 0 and 1 to change how this sound is.
 	 */
 	public var volume(get, set):Float;
+
+	/**
+	 * Whether or not the sound is muted.
+	 */
+	public var muted(get, set):Bool;
 	
 	#if FLX_PITCH
 	/**
@@ -109,13 +117,18 @@ class FlxSound extends FlxBasic
 	 * @since 4.2.0
 	 */
 	public var length(get, never):Float;
+
+	/**
+	 * The latency of the sound in milliseconds.
+	 */
+	public var latency(get, never):Float;
 	
 	/**
 	 * The sound group this sound belongs to, can only be in one group.
- 	 * NOTE: This setter is deprecated, use `group.add(sound)` or `group.remove(sound)`.
 	 */
-	public var group(default, set):FlxSoundGroup;
-	
+	@:allow(flixel.sound.FlxSoundGroup)
+	public var group(default, null):FlxSoundGroup;
+
 	/**
 	 * Whether or not this sound should loop.
 	 */
@@ -165,6 +178,11 @@ class FlxSound extends FlxBasic
 	 * Internal tracker for volume.
 	 */
 	var _volume:Float;
+
+	/**
+	 * Internal tracker for whether the sound is muted or not.
+	 */
+	var _muted:Bool;
 	
 	/**
 	 * Internal tracker for sound channel position.
@@ -214,6 +232,7 @@ class FlxSound extends FlxBasic
 	public function new()
 	{
 		super();
+		onFinish = new FlxSignal();
 		reset();
 	}
 	
@@ -231,6 +250,7 @@ class FlxSound extends FlxBasic
 		_paused = false;
 		_volume = 1.0;
 		_volumeAdjust = 1.0;
+		_muted = false;
 		looped = false;
 		loopTime = 0.0;
 		endTime = 0.0;
@@ -248,6 +268,7 @@ class FlxSound extends FlxBasic
 		_transform.pan = 0;
 	}
 	
+	@:haxe.warning("-WDeprecated")
 	override public function destroy():Void
 	{
 		// Prevents double destroy
@@ -274,6 +295,7 @@ class FlxSound extends FlxBasic
 			_sound = null;
 		}
 		
+		onFinish.removeAll();
 		onComplete = null;
 		
 		super.destroy();
@@ -294,14 +316,14 @@ class FlxSound extends FlxBasic
 		// Distance-based volume control
 		if (_target != null)
 		{
-			var targetPosition = _target.getPosition();
+			final targetPosition = _target.getPosition();
 			radialMultiplier = targetPosition.distanceTo(FlxPoint.weak(x, y)) / _radius;
 			targetPosition.put();
 			radialMultiplier = 1 - FlxMath.bound(radialMultiplier, 0, 1);
 			
 			if (_proximityPan)
 			{
-				var d:Float = (x - _target.x) / _radius;
+				final d:Float = (x - _target.x) / _radius;
 				_transform.pan = FlxMath.bound(d, -1, 1);
 			}
 		}
@@ -433,6 +455,8 @@ class FlxSound extends FlxBasic
 		autoDestroy = AutoDestroy;
 		updateTransform();
 		exists = true;
+		onFinish.removeAll();
+		onFinish.add(onComplete);
 		onComplete = OnComplete;
 		#if FLX_PITCH
 		pitch = 1;
@@ -572,7 +596,7 @@ class FlxSound extends FlxBasic
 	 */
 	public inline function getActualVolume():Float
 	{
-		return _volume * _volumeAdjust;
+		return _volume * _volumeAdjust * (_muted ? 0 : 1);
 	}
 	
 	/**
@@ -604,7 +628,7 @@ class FlxSound extends FlxBasic
 
 	function calcTransformVolume():Float
 	{
-		final volume = (group != null ? group.getVolume() : 1.0) * _volume * _volumeAdjust;
+		final volume = (group != null ? group.getVolume() : 1.0) * _volume * _volumeAdjust * (_muted ? 0 : 1);
 
 		#if FLX_SOUND_SYSTEM
 		if (FlxG.sound.muted)
@@ -647,8 +671,10 @@ class FlxSound extends FlxBasic
 	 * An internal helper function used to help Flash
 	 * clean up finished sounds or restart looped sounds.
 	 */
+	@:haxe.warning("-WDeprecated")
 	function stopped(?_):Void
 	{
+		onFinish.dispatch();
 		if (onComplete != null)
 			onComplete();
 			
@@ -720,22 +746,6 @@ class FlxSound extends FlxBasic
 	}
 	#end
 	
-	@:deprecated("sound.group = myGroup is deprecated, use myGroup.add(sound)") // 5.7.0
-	function set_group(value:FlxSoundGroup):FlxSoundGroup
-	{
-		if (value != null)
-		{
-			// add to new group, also removes from prev and calls updateTransform
-			value.add(this);
-		}
-		else
-		{
-			// remove from prev group, also calls updateTransform
-			group.remove(this);
-		}
-		return value;
-	}
-	
 	inline function get_playing():Bool
 	{
 		return _channel != null;
@@ -751,6 +761,18 @@ class FlxSound extends FlxBasic
 		_volume = FlxMath.bound(Volume, 0, 1);
 		updateTransform();
 		return Volume;
+	}
+
+	inline function get_muted():Bool
+	{
+		return _muted;
+	}
+	
+	function set_muted(Muted:Bool):Bool
+	{
+		_muted = Muted;
+		updateTransform();
+		return Muted;
 	}
 	
 	#if FLX_PITCH
@@ -808,6 +830,23 @@ class FlxSound extends FlxBasic
 	inline function get_length():Float
 	{
 		return _length;
+	}
+
+	function get_latency():Float
+	{
+		if (_channel != null)
+		{
+			#if (openfl < "9.3.2")
+			@:privateAccess
+			if (_channel.__source != null)
+				return _channel.__source.latency;
+			#else
+			@:privateAccess
+			if (_channel.__audioSource != null)
+				return _channel.__audioSource.latency;
+			#end
+		}
+		return 0;
 	}
 	
 	override public function toString():String

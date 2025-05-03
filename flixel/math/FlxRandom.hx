@@ -28,13 +28,9 @@ class FlxRandom
 	public function new(?InitialSeed:Int)
 	{
 		if (InitialSeed != null)
-		{
 			initialSeed = InitialSeed;
-		}
 		else
-		{
 			resetInitialSeed();
-		}
 	}
 
 	/**
@@ -58,39 +54,33 @@ class FlxRandom
 	 * @param   Max        The maximum value that should be returned. 2,147,483,647 by default.
 	 * @param   Excludes   Optional array of values that should not be returned.
 	 */
-	public function int(Min:Int = 0, Max:Int = FlxMath.MAX_VALUE_INT, ?Excludes:Array<Int>):Int
+	public function int(min:Int = 0, max:Int = FlxMath.MAX_VALUE_INT, ?excludes:Array<Int>):Int
 	{
-		if (Min == 0 && Max == FlxMath.MAX_VALUE_INT && Excludes == null)
-		{
+		if (min == 0 && max == FlxMath.MAX_VALUE_INT && excludes == null)
 			return Std.int(generate());
-		}
-		else if (Min == Max)
-		{
-			return Min;
-		}
+		else if (min == max)
+			return min;
 		else
 		{
 			// Swap values if reversed
-			if (Min > Max)
+			if (min > max)
 			{
-				Min = Min + Max;
-				Max = Min - Max;
-				Min = Min - Max;
+				min = min + max;
+				max = min - max;
+				min = min - max;
 			}
 
-			if (Excludes == null)
-			{
-				return Math.floor(Min + generate() / MODULUS * (Max - Min + 1));
-			}
+			if (excludes == null)
+				return Math.floor(min + generate() / MODULUS * (max - min + 1));
 			else
 			{
 				var result:Int = 0;
 
 				do
 				{
-					result = Math.floor(Min + generate() / MODULUS * (Max - Min + 1));
+					result = Math.floor(min + generate() / MODULUS * (max - min + 1));
 				}
-				while (Excludes.indexOf(result) >= 0);
+				while (excludes.indexOf(result) >= 0);
 
 				return result;
 			}
@@ -102,43 +92,37 @@ class FlxRandom
 	 * Will not return a number in the Excludes array, if provided.
 	 * Please note that large Excludes arrays can slow calculations.
 	 *
-	 * @param   Min        The minimum value that should be returned. 0 by default.
-	 * @param   Max        The maximum value that should be returned. 1 by default.
-	 * @param   Excludes   Optional array of values that should not be returned.
+	 * @param   min        The minimum value that should be returned. 0 by default.
+	 * @param   max        The maximum value that should be returned. 1 by default.
+	 * @param   excludes   Optional array of values that should not be returned.
 	 */
-	public function float(Min:Float = 0, Max:Float = 1, ?Excludes:Array<Float>):Float
+	public function float(min:Float = 0, max:Float = 1, ?excludes:Array<Float>):Float
 	{
 		var result:Float = 0;
 
-		if (Min == 0 && Max == 1 && Excludes == null)
-		{
+		if (min == 0 && max == 1 && excludes == null)
 			return generate() / MODULUS;
-		}
-		else if (Min == Max)
-		{
-			result = Min;
-		}
+		else if (min == max)
+			result = min;
 		else
 		{
 			// Swap values if reversed.
-			if (Min > Max)
+			if (min > max)
 			{
-				Min = Min + Max;
-				Max = Min - Max;
-				Min = Min - Max;
+				min = min + max;
+				max = min - max;
+				min = min - max;
 			}
 
-			if (Excludes == null)
-			{
-				result = Min + (generate() / MODULUS) * (Max - Min);
-			}
+			if (excludes == null)
+				result = min + (generate() / MODULUS) * (max - min);
 			else
 			{
 				do
 				{
-					result = Min + (generate() / MODULUS) * (Max - Min);
+					result = min + (generate() / MODULUS) * (max - min);
 				}
-				while (Excludes.indexOf(result) >= 0);
+				while (excludes.indexOf(result) >= 0);
 			}
 		}
 
@@ -149,7 +133,7 @@ class FlxRandom
 	var _hasFloatNormalSpare:Bool = false;
 	var _floatNormalRand1:Float = 0;
 	var _floatNormalRand2:Float = 0;
-	var _twoPI:Float = Math.PI * 2;
+	final _twoPI:Float = Math.PI * 2;
 	var _floatNormalRho:Float = 0;
 
 	/**
@@ -167,7 +151,7 @@ class FlxRandom
 		if (_hasFloatNormalSpare)
 		{
 			_hasFloatNormalSpare = false;
-			var scale:Float = StdDev * _floatNormalRho;
+			final scale:Float = StdDev * _floatNormalRho;
 			return Mean + scale * _floatNormalRand2;
 		}
 
@@ -188,13 +172,13 @@ class FlxRandom
 	 * For example if you wanted a player to have a 30.5% chance of getting a bonus,
 	 * call bool(30.5) - true means the chance passed, false means it failed.
 	 *
-	 * @param   Chance   The chance of receiving the value.
+	 * @param   chance   The chance of receiving the value.
 	 *                   Should be given as a number between 0 and 100 (effectively 0% to 100%)
 	 * @return  Whether the roll passed or not.
 	 */
-	public inline function bool(Chance:Float = 50):Bool
+	public inline function bool(chance:Float = 50):Bool
 	{
-		return float(0, 100) < Chance;
+		return float(0, 100) < chance;
 	}
 
 	/**
@@ -204,9 +188,9 @@ class FlxRandom
 	 *                   Should be given as a number between 0 and 100 (effectively 0% to 100%)
 	 * @return  1 or -1
 	 */
-	public inline function sign(Chance:Float = 50):Int
+	public inline function sign(chance:Float = 50):Int
 	{
-		return bool(Chance) ? 1 : -1;
+		return bool(chance) ? 1 : -1;
 	}
 
 	/**
@@ -224,9 +208,7 @@ class FlxRandom
 		var pick:Int = 0;
 
 		for (i in WeightsArray)
-		{
 			totalWeight += i;
-		}
 
 		totalWeight = float(0, totalWeight);
 
@@ -265,14 +247,10 @@ class FlxRandom
 		if (Objects.length != 0)
 		{
 			if (WeightsArray == null)
-			{
 				WeightsArray = [for (i in 0...Objects.length) 1];
-			}
 
 			if (EndIndex == null)
-			{
 				EndIndex = Objects.length - 1;
-			}
 
 			StartIndex = Std.int(FlxMath.bound(StartIndex, 0, Objects.length - 1));
 			EndIndex = Std.int(FlxMath.bound(EndIndex, 0, Objects.length - 1));
@@ -286,9 +264,7 @@ class FlxRandom
 			}
 
 			if (EndIndex > WeightsArray.length - 1)
-			{
 				EndIndex = WeightsArray.length - 1;
-			}
 
 			_arrayFloatHelper = [for (i in StartIndex...EndIndex + 1) WeightsArray[i]];
 			selected = Objects[StartIndex + weightedPick(_arrayFloatHelper)];
@@ -309,11 +285,11 @@ class FlxRandom
 	#end
 	public function shuffle<T>(array:Array<T>):Void
 	{
-		var maxValidIndex = array.length - 1;
+		final maxValidIndex = array.length - 1;
 		for (i in 0...maxValidIndex)
 		{
-			var j = int(i, maxValidIndex);
-			var tmp = array[i];
+			final j = int(i, maxValidIndex);
+			final tmp = array[i];
 			array[i] = array[j];
 			array[j] = tmp;
 		}
@@ -322,49 +298,49 @@ class FlxRandom
 	/**
 	 * Returns a random color.
 	 *
-	 * @param   Min        An optional FlxColor representing the lower bounds for the generated color.
-	 * @param   Max        An optional FlxColor representing the upper bounds for the generated color.
-	 * @param 	Alpha      An optional value for the alpha channel of the generated color.
-	 * @param   GreyScale  Whether or not to create a color that is strictly a shade of grey. False by default.
+	 * @param   min        An optional FlxColor representing the lower bounds for the generated color.
+	 * @param   max        An optional FlxColor representing the upper bounds for the generated color.
+	 * @param 	alpha      An optional value for the alpha channel of the generated color.
+	 * @param   greyScale  Whether or not to create a color that is strictly a shade of grey. False by default.
 	 * @return  A color value as a FlxColor.
 	 */
-	public function color(?Min:FlxColor, ?Max:FlxColor, ?Alpha:Int, GreyScale:Bool = false):FlxColor
+	public function color(?min:FlxColor, ?max:FlxColor, ?alpha:Int, greyScale:Bool = false):FlxColor
 	{
 		var red:Int;
 		var green:Int;
 		var blue:Int;
-		var alpha:Int;
+		var alphaConst:Int;
 
-		if (Min == null && Max == null)
+		if (min == null && max == null)
 		{
 			red = int(0, 255);
 			green = int(0, 255);
 			blue = int(0, 255);
-			alpha = Alpha == null ? int(0, 255) : Alpha;
+			alphaConst = alpha == null ? int(0, 255) : alpha;
 		}
-		else if (Max == null)
+		else if (max == null)
 		{
-			red = int(Min.red, 255);
-			green = GreyScale ? red : int(Min.green, 255);
-			blue = GreyScale ? red : int(Min.blue, 255);
-			alpha = Alpha == null ? int(Min.alpha, 255) : Alpha;
+			red = int(min.red, 255);
+			green = greyScale ? red : int(min.green, 255);
+			blue = greyScale ? red : int(min.blue, 255);
+			alphaConst = alpha == null ? int(min.alpha, 255) : alpha;
 		}
-		else if (Min == null)
+		else if (min == null)
 		{
-			red = int(0, Max.red);
-			green = GreyScale ? red : int(0, Max.green);
-			blue = GreyScale ? red : int(0, Max.blue);
-			alpha = Alpha == null ? int(0, Max.alpha) : Alpha;
+			red = int(0, max.red);
+			green = greyScale ? red : int(0, max.green);
+			blue = greyScale ? red : int(0, max.blue);
+			alphaConst = alpha == null ? int(0, max.alpha) : alpha;
 		}
 		else
 		{
-			red = int(Min.red, Max.red);
-			green = GreyScale ? red : int(Min.green, Max.green);
-			blue = GreyScale ? red : int(Min.blue, Max.blue);
-			alpha = Alpha == null ? int(Min.alpha, Max.alpha) : Alpha;
+			red = int(min.red, max.red);
+			green = greyScale ? red : int(min.green, max.green);
+			blue = greyScale ? red : int(min.blue, max.blue);
+			alphaConst = alpha == null ? int(min.alpha, max.alpha) : alpha;
 		}
 
-		return FlxColor.fromRGB(red, green, blue, alpha);
+		return FlxColor.fromRGB(red, green, blue, alphaConst);
 	}
 
 	/**
@@ -431,9 +407,9 @@ class FlxRandom
 	 * @see Stephen K. Park and Keith W. Miller and Paul K. Stockmeyer (1988).
 	 *      "Technical Correspondence". Communications of the ACM 36 (7): 105–110.
 	 */
-	static inline var MULTIPLIER:Float = 48271.0;
+	static inline final MULTIPLIER:Float = 48271.0;
 
-	static inline var MODULUS:Int = FlxMath.MAX_VALUE_INT;
+	static inline final MODULUS:Int = FlxMath.MAX_VALUE_INT;
 
 	#if FLX_RECORD
 	/**

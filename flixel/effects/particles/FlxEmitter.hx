@@ -41,7 +41,7 @@ class FlxTypedEmitter<T:FlxSprite & IFlxParticle> extends FlxTypedGroup<T>
 	 */
 	public var frequency:Float = 0.1;
 	/**
-	 * Sets particle's blend mode. `null` by default. Warning: Expensive on Flash.
+	 * Sets particle's blend mode. `null` by default.
 	 */
 	public var blend:BlendMode;
 	/**

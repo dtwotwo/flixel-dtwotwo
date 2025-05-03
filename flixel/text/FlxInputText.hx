@@ -286,7 +286,7 @@ class FlxInputText extends FlxText implements IFlxInputText
 	/**
 	 * Stores the last time that this text field was pressed on, which helps to check for double-presses.
 	 */
-	var _lastPressTime:Int = 0;
+	var _lastPressTime:Float = 0;
 	
 	/**
 	 * Timer for the text field to scroll vertically when dragging over it.
@@ -770,35 +770,12 @@ class FlxInputText extends FlxText implements IFlxInputText
 	 * of a character that isn't currently visible on Flash.
 	 */
 	function getCharBoundaries(char:Int):Rectangle
-	{
-		#if flash
-		// On Flash, `getCharBoundaries()` always returns null if the character is before
-		// the current vertical scroll. Let's just set the scroll directly at the line
-		// and change it back later
-		var cacheScrollV = scrollV;
-		var lineIndex = getLineIndexOfChar(char);
-		// Change the internal text field's property instead to not cause a loop due to `_regen`
-		// always being set back to true
-		textField.scrollV = lineIndex + 1;
-		var prevRegen = _regen;
-		#end
-		
+	{		
 		var boundaries = textField.getCharBoundaries(char);
 		if (boundaries == null)
 		{
-			#if flash
-			textField.scrollV = cacheScrollV;
-			_regen = prevRegen;
-			#end
 			return null;
 		}
-		
-		#if flash
-		textField.scrollV = cacheScrollV;
-		_regen = prevRegen;
-		// Set the Y to the correct position
-		boundaries.y = GUTTER + getLineY(lineIndex);
-		#end
 		
 		return boundaries;
 	}
@@ -1261,61 +1238,6 @@ class FlxInputText extends FlxText implements IFlxInputText
 		clipSprite(_caret);
 	}
 	
-	#if flash
-	/**
-	 * Used in Flash to automatically update the horizontal scroll after setting the selection.
-	 */
-	function updateScrollH():Void
-	{
-		if (textField.textWidth <= width - (GUTTER * 2))
-		{
-			scrollH = 0;
-			return;
-		}
-		
-		var tempScrollH = scrollH;
-		if (_caretIndex == 0 || textField.getLineOffset(getLineIndexOfChar(_caretIndex)) == _caretIndex)
-		{
-			tempScrollH = 0;
-		}
-		else
-		{
-			var caret:Rectangle = null;
-			if (_caretIndex < text.length)
-			{
-				caret = getCharBoundaries(_caretIndex);
-			}
-			if (caret == null)
-			{
-				caret = getCharBoundaries(_caretIndex - 1);
-				caret.x += caret.width;
-			}
-			
-			while (caret.x < tempScrollH && tempScrollH > 0)
-			{
-				tempScrollH -= 24;
-			}
-			while (caret.x > tempScrollH + width - (GUTTER * 2))
-			{
-				tempScrollH += 24;
-			}
-		}
-		
-		if (tempScrollH < 0)
-		{
-			scrollH = 0;
-		}
-		else if (tempScrollH > maxScrollH)
-		{
-			scrollH = maxScrollH;
-		}
-		else
-		{
-			scrollH = tempScrollH;
-		}
-	}
-	#end
-	
 	/**
 	 * Updates the selection with the current `_selectionIndex` and `_caretIndex`.
 	 * @param keepScroll Whether or not to keep the current horizontal and vertical scroll.
@@ -1334,12 +1256,7 @@ class FlxInputText extends FlxText implements IFlxInputText
 			scrollV = cacheScrollV;
 		}
 		else
-		{
-			#if flash
-			// Horizontal scroll is not automatically set on Flash
-			updateScrollH();
-			#end
-			
+		{	
 			if (scrollH != cacheScrollH || scrollV != cacheScrollV)
 			{
 				onScrollChange.dispatch(scrollH, scrollV);

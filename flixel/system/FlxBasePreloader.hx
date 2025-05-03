@@ -140,11 +140,6 @@ class FlxBasePreloader extends DefaultPreloader
 	 */
 	override public function onUpdate(bytesLoaded:Int, bytesTotal:Int)
 	{
-		#if flash
-		if (root.loaderInfo.bytesTotal == 0)
-			bytesTotal = 50000;
-		#end
-
 		#if web
 		_percent = (bytesTotal != 0) ? bytesLoaded / bytesTotal : 0;
 		#else
@@ -200,12 +195,12 @@ class FlxBasePreloader extends DefaultPreloader
 
 	/**
 	 * This should be used whenever you want to create a Bitmap that uses BitmapData embedded with the
-	 * @:bitmap metadata, if you want to support both Flash and HTML5. Because the embedded data is loaded
+	 * @:bitmap metadata, if you want to support HTML5. Because the embedded data is loaded
 	 * asynchronously in HTML5, any code that depends on the pixel data or size of the bitmap should be
 	 * in the onLoad function; any such code executed before it is called will fail on the HTML5 target.
 	 *
 	 * @param	bitmapDataClass		A reference to the BitmapData child class that contains the embedded data which is to be used.
-	 * @param	onLoad				Executed once the bitmap data is finished loading in HTML5, and immediately in Flash. The new Bitmap instance is passed as an argument.
+	 * @param	onLoad				Executed once the bitmap data is finished loading in HTML5. The new Bitmap instance is passed as an argument.
 	 * @return  The Bitmap instance that was created.
 	 */
 	function createBitmap(bitmapDataClass:Class<BitmapData>, onLoad:Bitmap->Void):Bitmap
@@ -229,7 +224,7 @@ class FlxBasePreloader extends DefaultPreloader
 	 * will fail on the HTML5 target.
 	 *
 	 * @param	bitmapDataClass		A reference to the BitmapData child class that contains the embedded data which is to be used.
-	 * @param	onLoad				Executed once the bitmap data is finished loading in HTML5, and immediately in Flash. The new BitmapData instance is passed as an argument.
+	 * @param	onLoad				Executed once the bitmap data is finished loading in HTML5. The new BitmapData instance is passed as an argument.
 	 * @return  The BitmapData instance that was created.
 	 */
 	function loadBitmapData(bitmapDataClass:Class<BitmapData>, onLoad:BitmapData->Void):BitmapData
@@ -391,7 +386,7 @@ class FlxBasePreloader extends DefaultPreloader
 		if (allowedURLs.length == 0)
 			return true;
 
-		var homeURL:String = #if flash loaderInfo.loaderURL #elseif js js.Browser.location.href #else "" #end;
+		var homeURL:String = #if js js.Browser.location.href #else "" #end;
 		var homeDomain:String = FlxStringUtil.getDomain(homeURL);
 		for (allowedURL in allowedURLs)
 		{

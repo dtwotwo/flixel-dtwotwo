@@ -36,6 +36,8 @@ class BitmapFrontEnd
 	 */
 	public var whitePixel(get, never):FlxFrame;
 
+	public var autoClearCache:Bool = true;
+
 	@:allow(flixel.system.frontEnds.BitmapLogFrontEnd)
 	var _cache:Map<String, FlxGraphic>;
 

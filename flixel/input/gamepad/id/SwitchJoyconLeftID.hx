@@ -21,24 +21,6 @@ import flixel.input.gamepad.FlxGamepadAnalogStick;
  */
 enum abstract SwitchJoyconLeftID(Int) to Int
 {
-	#if flash
-	var UP = 8;
-	var LEFT = 9;
-	var DOWN = 10;
-	var RIGHT = 11;
-	var SL = 12;
-	var SR = 13;
-	var ZL = 14;
-	var L = 15;
-	var MINUS = 17;
-	var CAPTURE = 21;
-	var LEFT_STICK_CLICK = 22;
-	
-	var LEFT_STICK_UP = 24;
-	var LEFT_STICK_DOWN = 25;
-	var LEFT_STICK_LEFT = 26;
-	var LEFT_STICK_RIGHT = 27;
-	#else
 	var ZL = 4;
 	var DOWN = 6;
 	var RIGHT = 7;
@@ -55,7 +37,7 @@ enum abstract SwitchJoyconLeftID(Int) to Int
 	var LEFT_STICK_DOWN = 23;
 	var LEFT_STICK_LEFT = 24;
 	var LEFT_STICK_RIGHT = 25;
-	#end
+
 	public static final LEFT_ANALOG_STICK = new FlxTypedGamepadAnalogStick<SwitchJoyconLeftID>(0, 1, {
 		up: LEFT_STICK_UP,
 		down: LEFT_STICK_DOWN,

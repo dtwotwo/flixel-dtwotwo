@@ -104,12 +104,8 @@ class FlxSave implements IFlxDestroyable
 	 */
 	public static inline function resolveFlixelClasses(name:String)
 	{
-		#if flash
-		return Type.resolveClass(name);
-		#else
 		@:privateAccess
 		return SharedObject.__resolveClass(name);
-		#end
 	}
 	
 	/**
@@ -188,7 +184,6 @@ class FlxSave implements IFlxDestroyable
 					data = _sharedObject.data;
 					status = BOUND(name, path);
 					return true;
-				#if !flash
 				case FAILURE(PARSING(rawData, exception), sharedObject) if (backupParser != null):
 					// Use the provided backup parser
 					final parsedData = backupParser(rawData, exception);
@@ -204,7 +199,6 @@ class FlxSave implements IFlxDestroyable
 					sharedObject.data = parsedData;
 					status = BOUND(name, path);
 					return true;
-				#end
 				case FAILURE(type, sharedObject):
 					_sharedObject = sharedObject;
 					status = LOAD_ERROR(type);
@@ -365,8 +359,6 @@ class FlxSave implements IFlxDestroyable
 				FlxG.log.error('Invalid path:"$path", ${reason == null ? "" : reason}.');
 			case LOAD_ERROR(PARSING(rawData, e)):
 				FlxG.log.error('Error parsing "$rawData", ${e.message}.');
-			case found:
-				throw 'Unexpected status: $found';
 		}
 		return false;
 	}
@@ -407,7 +399,7 @@ class FlxSave implements IFlxDestroyable
 }
 
 /**
- * Internal helper for overriding OpenFL save directories. Ignored on flash. If no data is found at
+ * Internal helper for overriding OpenFL save directories. If no data is found at
  * the desired path, it will check the legacy path, but `flush` calls will save to the new path.
  * 
  * ## Paths
@@ -423,7 +415,7 @@ class FlxSave implements IFlxDestroyable
 @:access(openfl.net.SharedObject)
 private class FlxSharedObject extends SharedObject
 {
-	#if (flash || android || ios)
+	#if (android || ios)
 	/** Use SharedObject as usual */
 	public static inline function getLocal(name:String, ?localPath:String):LoadResult
 	{
@@ -434,7 +426,7 @@ private class FlxSharedObject extends SharedObject
 		}
 		catch (e)
 		{
-			// We can't detect parsing or naming errors in flash, just use IO for everything
+			// just use IO for everything
 			return FAILURE(IO(e));
 		}
 	}
@@ -768,7 +760,7 @@ enum FlxSaveStatus
 	BOUND(name:String, ?path:String);
 	
 	/**
-	 * There was an issue during `flush`. Previously known as `ERROR(msg:String)`
+	 * There was an issue during `flush`.
 	 */
 	SAVE_ERROR(type:SaveFailureType);
 	
@@ -776,8 +768,4 @@ enum FlxSaveStatus
 	 * There was an issue while loading
 	 */
 	LOAD_ERROR(type:LoadFailureType);
-	
-	@:noCompletion
-	@:deprecated("FlxSaveStatus.ERROR is never used, it has been replaced by SAVE_ERROR")
-	ERROR(msg:String);
 }
